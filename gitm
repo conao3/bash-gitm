@@ -32,11 +32,42 @@ function parse() {
         esac
         shift
     done
+
+    if [[ -z "${split}" ]]; then
+        printf "Error: -s, --split argument is required.\n%s\n" "${usage}" | die
+    fi
+    if [[ -z "${to}" ]]; then
+        printf "Error: -t, --to argument is required.\n%s\n" "${usage}" | die
+    fi
 }
 
 parse "$@"
 set -- "${args[@]}"
 
+py_program=$(cat <<EOF
+import datetime as dt
+
+s = ${split}
+t1, t2 = [int(elm) for elm in '${to}'.split('-')]
+
+s_duration = 24
+t_duration = t2 - t1 + 1
+
+c_dt = dt.datetime.now().astimezone()
+c1 = c_dt.hour + c_dt.minute / 60 + c_dt.second / 3600
+c2 = (c1 - s + s_duration) / s_duration
+
+m2 = c2
+m1 = t_duration * (m2 % 1) + t1 + (m2 // 1 - 1) * 24
+m_dt = dt.datetime(c_dt.year, c_dt.month, c_dt.day).astimezone() + dt.timedelta(hours=m1)
+
+print(m_dt.replace(microsecond=0).isoformat())
+
+EOF
+)
+
+datetime=$(python -c "${py_program}")
+
 set -x
 
-exec git "$@"
+GIT_AUTHOR_DATE=${datetime} GIT_COMMITTER_DATE=${datetime} exec git "$@"
