@@ -18,7 +18,7 @@
       ];
 
       perSystem =
-        { pkgs, self', ... }:
+        { pkgs, ... }:
         {
           packages.default = pkgs.writeShellApplication {
             name = "gitm";
@@ -36,13 +36,10 @@
           };
 
           devShells.default = pkgs.mkShell {
-            packages =
-              with pkgs;
-              [
-                bash
-                python3
-              ]
-              ++ [ self'.packages.default ];
+            packages = with pkgs; [
+              bash
+              python3
+            ];
           };
         };
     };
