@@ -24,7 +24,7 @@
             name = "gitm";
             runtimeInputs = with pkgs; [
               git
-              python3
+              python315
             ];
             text = builtins.readFile ./gitm;
           };
@@ -38,7 +38,7 @@
           devShells.default = pkgs.mkShell {
             packages = with pkgs; [
               bash
-              python3
+              python315
             ];
           };
         };
